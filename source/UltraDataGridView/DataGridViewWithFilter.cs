@@ -268,6 +268,28 @@ namespace DataGridWithFilter
 
         private void ApllyFilter()
         {
+
+            var groupedList = Filter
+                .Where(o => o.check==false)  
+                .GroupBy(o => o.columnName)
+                .Select(g => new { A = g.Key, B = string.Join(",", g.Select(o => o.valueString)) })
+                .ToList();
+
+
+            for (int i = 0; i < groupedList.Count(); i++)
+            {
+                if (i==0)
+                {
+                    StrFilter += "[" + groupedList[i].A + "] NOT IN (\'" + groupedList[i].B.Replace(",", "\',\'") + "\') ";
+                }
+                else
+                {
+                    StrFilter += "AND [" + groupedList[i].A + "] NOT IN (\'" + groupedList[i].B.Replace(",", "\',\'") + "\') ";
+                }
+            }
+
+            // below code caueses StackOverflow Exception because StrFilter can be very big.
+            /*
             foreach (FilterStatus val in Filter)
             {
                 if (val.check == false)
@@ -282,6 +304,7 @@ namespace DataGridWithFilter
                     }
                 }
             }
+            */
             (this.DataSource as DataTable).DefaultView.RowFilter = StrFilter;
         }
     }
